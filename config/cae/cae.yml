@@ -1,0 +1,21 @@
+experiment:
+  seed: 28
+  num_epochs: 50
+  batch_size: 128
+
+model:
+  cae:
+    from_module: cae
+    encoder_class_name: Autoencoder
+    encoder_name: cae
+    args: []
+    kwargs:
+      in_channels: 19
+      max_len: 50
+
+      kernel_size: 3
+      out_channels: [32, 64, 128]
+      latent_size: 256
+      
+      lr: 0.001
+      optimizer_name: "adam"

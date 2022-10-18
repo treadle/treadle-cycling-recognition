@@ -1,3 +1,15 @@
 # data 
 data/
 sampled_data/
+
+# cache
+datasets/__pycache__/data_record.cpython-37.pyc
+datasets/__pycache__/lightning_datamodule.cpython-37.pyc
+datasets/__pycache__/lightning_datamodule.cpython-39.pyc
+models/__pycache__/
+utils/__pycache__/
+
+# logs and results
+logs/
+model_weights/
+results/
