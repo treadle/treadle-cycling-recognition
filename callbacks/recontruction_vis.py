@@ -36,13 +36,13 @@ class ReconstructionVis(pl.Callback):
     def on_test_epoch_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
         self._reset_state()
 
-    def on_train_batch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", outputs, batch, batch_idx, dataloader_idx) -> None:
+    def on_train_batch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", outputs, batch, batch_idx) -> None:
         self.inputs = outputs['x']
         self.noised = outputs['noised']
         self.reconstructed = outputs['reconstructed']
         self.gt = outputs['y']
     
-    def on_test_batch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", outputs, batch, batch_idx, dataloader_idx) -> None:
+    def on_test_batch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", outputs, batch, batch_idx) -> None:
         self.inputs.extend(outputs['x'].cpu().detach().numpy())
         self.reconstructed.extend(outputs['reconstructed'].cpu().detach().numpy())
         self.gt.extend(outputs['y'].cpu().detach().numpy())
