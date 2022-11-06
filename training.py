@@ -1,9 +1,11 @@
 import argparse
+from email.policy import default
 
 import numpy as np
 import os
 from callbacks.recontruction_vis import ReconstructionVis
 
+import torch
 from torchvision import transforms
 from pytorch_lightning import Trainer, seed_everything
 
@@ -24,6 +26,7 @@ def parse_arguments():
 
     # model
     parser.add_argument('--model', default='cae')
+    parser.add_argument('--export_onnx', action='store_true', default=False)
 
     # misc
     parser.add_argument('--num_workers', default=1, type=int)
@@ -37,10 +40,14 @@ def train_test_autoencoder(args, config):
 
     cae = Autoencoder(config['model'][args.model]['kwargs']['in_channels'], config['model'][args.model]['kwargs']['out_channels'], config['model'][args.model]['kwargs']['latent_size'])
 
+
+    train_transforms = None
+    test_transforms = None
+
     mean = np.load(os.path.join(args.data_path, 'ovr_mean.npy'))
     std = np.load(os.path.join(args.data_path, 'ovr_std.npy'))
-
     train_transforms, test_transforms = init_transforms(mean, std)
+    
 
     datamodule = SensorDataModule(
         os.path.join(args.data_path, 'train'),
@@ -60,9 +67,25 @@ def train_test_autoencoder(args, config):
     trainer.fit(cae, datamodule)
     trainer.test(cae, datamodule)
 
+    if args.export_onnx:
+        data_placeholder = torch.randn(1, config['model'][args.model]['kwargs']['in_channels'], config['model'][args.model]['kwargs']['max_len'], requires_grad=True)
+        output = cae(data_placeholder)
+        print(output.shape)
+        torch.onnx.export(
+            cae,
+            data_placeholder,
+            os.path.join(args.model_weights_path, f'{args.model}_model.onnx'),
+            export_params=True,
+            opset_version=10,
+            do_constant_folding=True,
+            input_names=['input'],
+            output_names=['output'],
+            dynamic_axes={'input' : {0 : 'batch_size'},  'output' : {0 : 'batch_size'}}
+        )
+
 
 def main():
-    seed_everything()
+    seed_everything(20734869)
     args = parse_arguments()
     config = load_yaml_to_dict(args.experiment_config)
     train_test_autoencoder(args, config)

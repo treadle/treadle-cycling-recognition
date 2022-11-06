@@ -42,7 +42,7 @@ class ReconstructionVis(pl.Callback):
         self.reconstructed = outputs['reconstructed']
         self.gt = outputs['y']
     
-    def on_test_batch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", outputs, batch, batch_idx) -> None:
+    def on_test_batch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", outputs, batch, batch_idx, dataloader_idx) -> None:
         self.inputs.extend(outputs['x'].cpu().detach().numpy())
         self.reconstructed.extend(outputs['reconstructed'].cpu().detach().numpy())
         self.gt.extend(outputs['y'].cpu().detach().numpy())
@@ -70,12 +70,15 @@ class ReconstructionVis(pl.Callback):
 
 def visualize_loss_distribution(gt, pairwise_loss, name, save_path='results/reconstruction/test'):
     os.makedirs(save_path, exist_ok=True)
-    idx_cycling = np.where(gt == 1)
-    idx_other = np.where(gt == 0)
+    idx_cycling = np.where(gt == 0)
+    idx_scooter = np.where(gt == 1)
+    idx_walking = np.where(gt == 2)
     loss_cycling = pairwise_loss[idx_cycling]
-    loss_other = pairwise_loss[idx_other]
-    df_list = [(loss, 1) for loss in loss_cycling]
-    df_list.extend([(loss, 0) for loss in loss_other])
+    loss_scooter = pairwise_loss[idx_scooter]
+    loss_walking = pairwise_loss[idx_walking]
+    df_list = [(loss, 'cycling') for loss in loss_cycling]
+    df_list.extend([(loss, 'scooter') for loss in loss_scooter])
+    df_list.extend([(loss, 'walking') for loss in loss_walking])
     df = pd.DataFrame(df_list, columns=['loss', 'label'])
     sns.displot(data=df, x='loss', hue='label', kind='kde')
     plt.show()

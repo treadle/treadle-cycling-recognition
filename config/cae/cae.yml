@@ -14,8 +14,8 @@ model:
       max_len: 50
 
       kernel_size: 3
-      out_channels: [32, 64, 128]
-      latent_size: 256
+      out_channels: [64, 128, 256]
+      latent_size: 512
       
       lr: 0.001
       optimizer_name: "adam"

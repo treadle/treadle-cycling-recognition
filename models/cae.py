@@ -68,10 +68,9 @@ class Bottleneck(nn.Module):
         self.linear1 = nn.Linear(conv_out_size, latent_size)
         self.linear2 = nn.Linear(latent_size, conv_out_size)
 
-    def forward(self, x, return_features=False):
+    def forward(self, x):
         x = self.linear1(x)
-        if not return_features:
-            x = self.linear2(x)
+        x = self.linear2(x)
         return x
 
 
@@ -101,12 +100,11 @@ class Autoencoder(LightningModule):
         self.lr = lr
         self.optimizer_name = optimizer_name
 
-    def forward(self, x, return_features=False):
+    def forward(self, x):
         x = self.encoder(x)
         x = nn.Flatten()(x)
-        x = self.bottleneck(x, return_features)
-        if not return_features:
-            x = self.decoder(x)
+        x = self.bottleneck(x)
+        x = self.decoder(x)
         return x
 
     def _prepare_batch(self, batch):
@@ -117,7 +115,7 @@ class Autoencoder(LightningModule):
     
     def training_step(self, batch, batch_idx):
         x, y = self._prepare_batch(batch)
-        x_noise = Jittering(0.3)(x)
+        x_noise = Jittering(0.01)(x)
 
         out = self(x_noise)
         loss = self.loss(out, x)

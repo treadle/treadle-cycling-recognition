@@ -21,7 +21,12 @@ class SensorDataset(Dataset):
     def __getitem__(self, idx):
         signals = np.load(self.files[idx])
         label_text = os.path.basename(self.files[idx]).split('.')[0].split('_')[2]
-        label = 1 if label_text == 'cycle' else 0
+        if label_text == 'cycle':
+            label = 0
+        elif label_text == 'scooter':
+            label = 1
+        elif label_text == 'walking':
+            label = 2
         if self.transforms is not None:
             signals = self.transforms(signals)
         return signals, label

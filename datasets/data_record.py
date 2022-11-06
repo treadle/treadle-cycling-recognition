@@ -10,7 +10,10 @@ class DataRecord:
 		self.data_path = data_path
 		self.meta_path = meta_path
 
-		self.data = self.read_data()
+		self.data = self.read_data().drop(['time'], axis=1)
+		if 'seconds_elapsed' in self.data.columns:
+			self.data.drop(['seconds_elapsed'], axis=1)
+		self.data = self.data[['acc_z', 'acc_y', 'acc_x', 'gyr_z', 'gyr_y', 'gyr_x', 'gra_z', 'gra_y', 'gra_x', 'mag_z', 'mag_y', 'mag_x', 'ori_qz', 'ori_qy', 'ori_qx' , 'ori_qw', 'ori_roll', 'ori_pitch', 'ori_yaw']].fillna(0)
 		self.meta = self.read_meta()
 
 		self.freq = self.extract_freq()
@@ -26,7 +29,16 @@ class DataRecord:
 	def extract_info(self):
 		filename = os.path.basename(self.data_path).split('.')[0]
 		splitted_filename = filename.split('_')
-		return splitted_filename
+		subject = splitted_filename[0]
+		devices = splitted_filename[1]
+		label = splitted_filename[2]
+		trial = splitted_filename[-1]
+		if len(splitted_filename) == 4:
+			location = 'none'
+		else:
+			location = splitted_filename[3]
+
+		return subject, devices, label, location, trial
 	
 	def extract_freq(self):
 		return 1000 / int(self.meta.sampleRateMs[0].split('|')[0])
@@ -41,8 +53,8 @@ class DataRecord:
 		std : np.ndarray
 			std per channel
 		"""
-		mean = self.data.iloc[:, 2:].mean(axis=0, skipna=False)	
-		std = self.data.iloc[:, 2:].std(axis=0, skipna=False)	
+		mean = self.data.mean(axis=0, skipna=False)	
+		std = self.data.std(axis=0, skipna=False)	
 		return mean, std
 
 	def sample(self, len_tw_sec, overlap_ratio=0):
@@ -60,7 +72,7 @@ class DataRecord:
 		numpy.ndarray
 			array of sampled time-windows
 		"""
-		data_array = np.array(self.data.iloc[1:, 2:])
+		data_array = np.array(self.data.iloc[1:])
 		num_entries = int(self.freq / len_tw_sec)
 		step = num_entries * (1 - overlap_ratio)
 		assert 0 <= overlap_ratio < 1, "Overlap ratio should be in [0, 1)"
