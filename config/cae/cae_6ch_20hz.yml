@@ -10,12 +10,12 @@ model:
     encoder_name: cae
     args: []
     kwargs:
-      in_channels: 19
-      max_len: 50
+      in_channels: 6
+      max_len: 20
 
       kernel_size: 3
-      out_channels: [64, 128, 256]
-      latent_size: 512
+      out_channels: [16, 32, 64]
+      latent_size: 64
       
       lr: 0.001
       optimizer_name: "adam"

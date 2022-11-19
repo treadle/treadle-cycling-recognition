@@ -15,6 +15,8 @@ from models.cae import Autoencoder
 from utils.augmentations import init_transforms
 from utils.utils import load_yaml_to_dict
 
+from torch.utils.mobile_optimizer import optimize_for_mobile
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
@@ -27,6 +29,7 @@ def parse_arguments():
     # model
     parser.add_argument('--model', default='cae')
     parser.add_argument('--export_onnx', action='store_true', default=False)
+    parser.add_argument('--as_ptl', action='store_true', default=False)
 
     # misc
     parser.add_argument('--num_workers', default=1, type=int)
@@ -67,14 +70,19 @@ def train_test_autoencoder(args, config):
     trainer.fit(cae, datamodule)
     trainer.test(cae, datamodule)
 
+    if args.as_ptl:  
+        scripted_model = torch.jit.script(cae)
+        optimized_model = optimize_for_mobile(scripted_model)
+        optimized_model._save_for_lite_interpreter("model_weights.ptl")
     if args.export_onnx:
+        cae.eval()
         data_placeholder = torch.randn(1, config['model'][args.model]['kwargs']['in_channels'], config['model'][args.model]['kwargs']['max_len'], requires_grad=True)
         output = cae(data_placeholder)
         print(output.shape)
         torch.onnx.export(
             cae,
             data_placeholder,
-            os.path.join(args.model_weights_path, f'{args.model}_model.onnx'),
+            os.path.join(args.model_weights_path, f'{args.model}_model_19ch.onnx'),
             export_params=True,
             opset_version=10,
             do_constant_folding=True,

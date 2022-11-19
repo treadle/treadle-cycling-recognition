@@ -2,6 +2,8 @@ import numpy as np
 import os
 import pandas as pd
 
+#  ORDER = ['acc_z', 'acc_y', 'acc_x', 'gyr_z', 'gyr_y', 'gyr_x']
+ORDER = ['acc_z', 'acc_y', 'acc_x', 'gyr_z', 'gyr_y', 'gyr_x', 'gra_z', 'gra_y', 'gra_x', 'mag_z', 'mag_y', 'mag_x', 'ori_qz', 'ori_qy', 'ori_qx' , 'ori_qw', 'ori_roll', 'ori_pitch', 'ori_yaw']
 
 class DataRecord:
 	""" Class for processing single record of sensor data
@@ -13,7 +15,7 @@ class DataRecord:
 		self.data = self.read_data().drop(['time'], axis=1)
 		if 'seconds_elapsed' in self.data.columns:
 			self.data.drop(['seconds_elapsed'], axis=1)
-		self.data = self.data[['acc_z', 'acc_y', 'acc_x', 'gyr_z', 'gyr_y', 'gyr_x', 'gra_z', 'gra_y', 'gra_x', 'mag_z', 'mag_y', 'mag_x', 'ori_qz', 'ori_qy', 'ori_qx' , 'ori_qw', 'ori_roll', 'ori_pitch', 'ori_yaw']].fillna(0)
+		self.data = self.data[ORDER].fillna(0)
 		self.meta = self.read_meta()
 
 		self.freq = self.extract_freq()

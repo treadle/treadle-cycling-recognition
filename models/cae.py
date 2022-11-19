@@ -75,7 +75,7 @@ class Bottleneck(nn.Module):
 
 
 class Autoencoder(LightningModule):
-    def __init__(self, in_channels, out_channels, latent_size, kernel_size=3, stride=1, padding=1, pooling_kernel=2, pooling_padding=0, len_seq=50, metric_scheduler='loss', lr=0.001, optimizer_name='adam'):
+    def __init__(self, in_channels, out_channels, latent_size, kernel_size=3, stride=1, padding=1, pooling_kernel=2, pooling_padding=0, len_seq=20, metric_scheduler='loss', lr=0.001, optimizer_name='adam'):
         super(Autoencoder, self).__init__()
         # architecture
         self.name = 'cae'
@@ -91,6 +91,7 @@ class Autoencoder(LightningModule):
         self.upsampling = self.upsampling[::-1][1:]
 
         self.bottleneck = Bottleneck(conv_out_size, latent_size)
+        self.flatten = nn.Flatten()
 
         self.decoder = Decoder(in_channels, out_channels, kernel_size, self.upsampling, stride, padding)
 
@@ -102,7 +103,7 @@ class Autoencoder(LightningModule):
 
     def forward(self, x):
         x = self.encoder(x)
-        x = nn.Flatten()(x)
+        x = self.flatten(x)
         x = self.bottleneck(x)
         x = self.decoder(x)
         return x
