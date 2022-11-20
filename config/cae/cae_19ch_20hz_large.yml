@@ -1,6 +1,6 @@
 experiment:
   seed: 28
-  num_epochs: 50
+  num_epochs: 25
   batch_size: 128
 
 model:

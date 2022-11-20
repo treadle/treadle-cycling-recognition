@@ -39,6 +39,52 @@ python training.py --data_path ./sampled_data/v1_sec1_ovr0_20hz_test_volodymyr_y
 ```
 By default some results (train/test reconstructions and test loss distribution for cycling and non-cycling activities) will be saved to `./results`; saved model parameters -- to `./model_weights`; lightning logs -- to `./logs`.
 
+## Results
+### Reconsruction ability
+During training we evaluate how the autoencoder model learns to reconstruct the input signals. Below we attach some reconstructions of cycling activity time-windows produced by models of different complexity after 1st, 10th and 25th epoch of training, respectively.
+
+Complex model `./configs/cae_19ch_20hz_large.yml`:
+<p>
+<img src="././figures/reconstruction/complex/epoch_1.png" alt="After 1st epoch" width="200"/>
+<img src="././figures/reconstruction/complex/epoch_10.png" alt="After 10th epoch" width="200"/>
+<img src="././figures/reconstruction/complex/epoch_25.png" alt="After 25th epoch" width="200"/>
+</p>
+
+Simplified model `./configs/cae_19ch_20hz.yml`:
+<p>
+<img src="././figures/reconstruction/simple/epoch_1.png" alt="After 1st epoch" width="200"/>
+<img src="././figures/reconstruction/simple/epoch_10.png" alt="After 10th epoch" width="200"/>
+<img src="././figures/reconstruction/simple/epoch_25.png" alt="After 25th epoch" width="200"/>
+</p>
+
+It is clearly seen that the simplified model learns patterns worse than the complex one. In turn, the complex one is much more heavy (100+ MB vs ~2MB) and slow.
+
+### Performance on test sets:
+We also assess  our models on the test sets that we held out beforehand. In this case, we have cycling activities of other people using other devices, and this may affect the reconstruction rates of the model. For this experiment, we have also trained a simple model that only uses accelerometers and gyroscopes (6 sensor channels, overall) to see if we can further simplify the models. 
+
+In our current dataset, we have 3 types of activities: cycling, walking and scooter riding. As described previously, we train the models on all the users performing cycling apart from volodymyr and yaroslav. Later, we test the model on cycling from volodymyr and yaroslav, and all the other activities performed by all users. In the table below, we show the average reconstruction errors per activity with their standard deviations in brackets. Ideally, these should be different for all three types of activities, so that we can set threshold during inference. Additionally, we trained a more simplified model on accelerometers and gyroscopes only (this can later make inference faster).
+
+Activity | Complex model | Simple model | Simple model (acc + gyro)
+--- | --- | --- | ---
+Cycling | 0.29 (0.15) | 0.63 (0.42) | 0.94 (1.01)
+Scooter Riding | 0.25 (0.24) | 0.55 (0.73) | 1.01 (1.77)
+Walking | 0.64 (0.27) | 2.04 (0.99) | 5.03 (2.86)
+
+On the one hand, reconstruction errors rates for the simplified models are larger for all activites including cycling, on the other hand there is a bigger difference between cycling and other activities for simple models. Also, there is still a clear difference between cycling and walking. As for scooter riding and cycling, at this stage, it is quite challenging to distinguish between them and this should be addressed in the next stages of the project (discussed below). 
+
+## Future Work
+We are planning to take the following steps in order to improve the current prototype of the anti-cheating system:
+
+* Collect more cycling and non-cycling data taking into account the following biases:
+	- Phone positions: pocket, bag, bike stand
+	- Cheating types: cars, different types of scooters, e-bikes (that case might be especially challenging)
+
+* Explore, what input channels and time-windows sizes are the most suitable for cycling recognition. This can improve the quality and efficiency (runtime) of the model during inference. We should find a good trade-off between reconstruction capacity and computational complexity of a model.
+
+* Try to solve the task as classification (not as anomaly detection), if enough labeled data is collected.
+
+* Find ways to fuse data coming from other useful modalities recorded at different frequencies (such as GPS tracking, speed, etc.) into the system. 
+
 ## References
 [1] https://en.wikipedia.org/wiki/Autoencoder
 

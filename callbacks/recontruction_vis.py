@@ -80,10 +80,12 @@ def visualize_loss_distribution(gt, pairwise_loss, name, save_path='results/reco
     df_list.extend([(loss, 'scooter') for loss in loss_scooter])
     df_list.extend([(loss, 'walking') for loss in loss_walking])
     df = pd.DataFrame(df_list, columns=['loss', 'label'])
-    print(df)
-    print('Mean loss cycling:', df[df['label'] == 'cycling'].mean())
-    print('Mean loss scooter:', df[df['label'] == 'scooter'].mean())
-    print('Mean loss walking:', df[df['label'] == 'walking'].mean())
+    cycling = df[df['label'] == 'cycling']['loss']
+    scooter = df[df['label'] == 'scooter']['loss']
+    walking = df[df['label'] == 'walking']['loss']
+    print('Mean loss cycling:', cycling.mean(), cycling.std())
+    print('Mean loss scooter:', scooter.mean(), scooter.std())
+    print('Mean loss walking:', walking.mean(), walking.std())
     sns.displot(data=df, x='loss', hue='label', kind='kde', common_norm=False)
     plt.show()
     plt.savefig(f'{save_path}/{name}.png')

@@ -1,6 +1,6 @@
 experiment:
   seed: 28
-  num_epochs: 50
+  num_epochs: 25
   batch_size: 128
 
 model:
@@ -14,7 +14,7 @@ model:
       max_len: 20
 
       kernel_size: 3
-      out_channels: [16, 32, 64]
+      out_channels: [4, 8, 16]
       latent_size: 64
       
       lr: 0.001

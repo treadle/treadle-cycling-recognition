@@ -1,6 +1,6 @@
 experiment:
   seed: 28
-  num_epochs: 50
+  num_epochs: 25
   batch_size: 128
 
 model:
@@ -15,7 +15,7 @@ model:
 
       kernel_size: 3
       out_channels: [16, 32, 64]
-      latent_size: 64
+      latent_size: 128
       
       lr: 0.001
       optimizer_name: "adam"
